@@ -23,3 +23,31 @@ struct Session: Equatable {
     let username: String
     let startedAt: Date
 }
+
+@MainActor
+final class LigandsViewModel: ObservableObject {
+    @Published var items: [String] = []
+    @Published var query: String = ""
+    @Published var isLoading = false
+    @Published var error: String?
+
+    var filtered: [String] {
+        guard !query.isEmpty else { return items }
+        return items.filter { $0.localizedCaseInsensitiveContains(query) }
+    }
+
+    func load() async {
+        guard items.isEmpty else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let text = try LigandsLoader.load()
+            items = text
+                .split(whereSeparator: \.isNewline)
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+        } catch {
+            self.error = "Impossible de charger ligands.txt"
+        }
+    }
+}
