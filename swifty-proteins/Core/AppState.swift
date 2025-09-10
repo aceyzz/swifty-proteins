@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 
+// monitor état global de l'app : sert a init l'auth (AuthStore) et gérer le feedback utilisateur (FeedbackCenter)
 @MainActor
 final class AppState: ObservableObject {
     @Published var auth: AuthStore?

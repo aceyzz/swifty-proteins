@@ -1,13 +1,14 @@
 import SwiftUI
 
+// modele donnee feedback
 enum FeedbackStyle { case success, error }
-
 struct FeedbackItem: Identifiable, Equatable {
 	let id = UUID()
 	let text: String
 	let style: FeedbackStyle
 }
 
+// appel et gestion des notifs feedback (banniere en haut de l'ecran)
 @MainActor
 final class FeedbackCenter: ObservableObject {
 	@Published var item: FeedbackItem?
@@ -22,6 +23,7 @@ final class FeedbackCenter: ObservableObject {
 	func dismiss() { withAnimation(.snappy) { item = nil } }
 }
 
+// vue et style de la banner de notif feedback
 struct FeedbackBanner: View {
 	var item: FeedbackItem
 	var body: some View {
@@ -54,6 +56,7 @@ struct FeedbackBanner: View {
 	}
 }
 
+// animation de la presentation banner notifs
 struct FeedbackPresenter: ViewModifier {
 	@ObservedObject var center: FeedbackCenter
 	func body(content: Content) -> some View {
@@ -71,6 +74,7 @@ struct FeedbackPresenter: ViewModifier {
 	}
 }
 
+// affiche banniere notifs feedback en superposition de nimporte quelle vue
 extension View {
 	func feedbackOverlay(_ center: FeedbackCenter) -> some View {
 		modifier(FeedbackPresenter(center: center))

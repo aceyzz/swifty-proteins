@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 
+// gestion de l'authentification (inscription, login, biométrie, changement mot de passe, suppression compte, deconnexion)
 @MainActor
 final class AuthStore: ObservableObject {
     @Published private(set) var session: Session?
@@ -52,6 +53,7 @@ final class AuthStore: ObservableObject {
         } catch { lastError = map(error) }
     }
 
+	// a voir si on l'utilise
     func changePassword(username: String, oldPassword: String, newPassword: String) {
         do {
             try repo.changePassword(username: username, oldPassword: oldPassword, newPassword: newPassword)

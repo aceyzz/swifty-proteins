@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+// main de l'app
 @main
 struct swifty_proteinsApp: App {
     var body: some Scene {
@@ -11,6 +12,9 @@ struct swifty_proteinsApp: App {
     }
 }
 
+// init de l'app
+// gestion du cycle de vie (foreground/background) > confidentialite de l'app (AppSecurity)
+// switch entre ecran de login et ecran principal selon l'etat de l'auth (AuthStore)
 struct RootView: View {
     @Environment(\.modelContext) private var ctx
     @Environment(\.scenePhase) private var scenePhase
@@ -37,6 +41,7 @@ struct RootView: View {
     }
 }
 
+// switch entre ecran de login et ecran principal selon l'etat de l'auth (AuthStore)
 struct AppSwitchView: View {
     @EnvironmentObject var auth: AuthStore
 

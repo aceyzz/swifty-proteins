@@ -1,5 +1,6 @@
 import Foundation
 
+// nettoyage des fichiers temporaires au prochain lancement de l'app
 enum StartupCleanup {
     private static let key = "needs_temp_cleanup"
     static func scheduleTempCleanupOnNextLaunch() { UserDefaults.standard.set(true, forKey: key) }

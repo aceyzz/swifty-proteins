@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 
+// modèle données utilisateur (SwiftData) : username, sel, hash du mot de passe, date de creation, biométrie activée ou pas
 @Model
 final class UserAccount {
     @Attribute(.unique) var username: String

@@ -3,11 +3,22 @@ import CryptoKit
 import LocalAuthentication
 import Security
 
+protocol BiometricsServicing {
+    func isAvailable() -> Bool
+}
+
 protocol CryptoServicing {
     func randomBytes(_ count: Int) -> Data
     func hash(password: String, salt: Data, rounds: Int) -> Data
 }
 
+protocol KeychainServicing {
+    func saveSecret(_ data: Data, account: String, requireBiometrics: Bool) throws
+    func loadSecret(account: String, localizedReason: String?) throws -> Data
+    func deleteSecret(account: String) throws
+}
+
+// CryptoKit et Security framework pour chiffrement
 struct CryptoService: CryptoServicing {
     func randomBytes(_ count: Int) -> Data {
         var bytes = [UInt8](repeating: 0, count: count)
@@ -26,14 +37,7 @@ struct CryptoService: CryptoServicing {
     }
 }
 
-protocol KeychainServicing {
-    func saveSecret(_ data: Data, account: String, requireBiometrics: Bool) throws
-    func loadSecret(account: String, localizedReason: String?) throws -> Data
-    func deleteSecret(account: String) throws
-}
-
-enum KeychainError: Error { case failure(OSStatus), accessControl, unknown(Error) }
-
+// policies d'accès pour le keychain : biométrie ou pas
 private func makeAccessControl(requireBiometrics: Bool) throws -> SecAccessControl {
     var cfError: Unmanaged<CFError>?
     let flags: SecAccessControlCreateFlags = requireBiometrics ? .biometryCurrentSet : []
@@ -44,6 +48,8 @@ private func makeAccessControl(requireBiometrics: Bool) throws -> SecAccessContr
     return ac
 }
 
+// Keychain: stockage sécurisé des infos sensibles (compte users id/mdp, tokens...etc) -> natifs a iOS/macOS
+enum KeychainError: Error { case failure(OSStatus), accessControl, unknown(Error) }
 struct KeychainService: KeychainServicing {
     func saveSecret(_ data: Data, account: String, requireBiometrics: Bool) throws {
         let access = try makeAccessControl(requireBiometrics: requireBiometrics)
@@ -83,10 +89,7 @@ struct KeychainService: KeychainServicing {
     }
 }
 
-protocol BiometricsServicing {
-    func isAvailable() -> Bool
-}
-
+// LocalAuthentication pour biométrie (FaceID/TouchID selon appareil)
 struct BiometricsService: BiometricsServicing {
     func isAvailable() -> Bool {
         let ctx = LAContext()

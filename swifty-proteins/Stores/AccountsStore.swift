@@ -10,6 +10,8 @@ protocol AccountsStoring {
     func deleteAll() throws
 }
 
+// CRUD (create, read, update, delete) sur les comptes utilisateurs (CoreData/SwiftData)
+// swiftdata : stockage local des données structurées (CoreData simplifié)
 final class AccountsStore: AccountsStoring {
     private let context: ModelContext
     init(context: ModelContext) { self.context = context }

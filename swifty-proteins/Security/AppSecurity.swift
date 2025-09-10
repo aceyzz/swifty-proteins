@@ -1,5 +1,6 @@
 import SwiftUI
 
+// confidentialite de l'app : proteger les infos sensibles a l'ecran si perte de focus
 @MainActor
 final class AppSecurity: ObservableObject {
     @Published private(set) var isShieldVisible = false

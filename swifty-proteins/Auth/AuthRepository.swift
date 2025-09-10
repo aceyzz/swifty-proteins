@@ -1,7 +1,6 @@
 import Foundation
 
 enum AuthError: Error { case userExists, userNotFound, invalidCredentials, biometricsUnavailable }
-
 protocol AuthRepositing {
     func createAccount(username: String, password: String, enableBiometrics: Bool) throws
     func authenticateWithPassword(username: String, password: String) throws -> Session
@@ -13,6 +12,8 @@ protocol AuthRepositing {
     func purgeAll() throws
 }
 
+// repository pattern pour l'authentification (inscription, login, biométrie, changement mot de passe, suppression compte, deconnexion)
+// sert a faire le lien entre les services (store, crypto, keychain, biometrics) et la couche superieure (AuthStore)
 final class AuthRepository: AuthRepositing {
     private let store: AccountsStoring
     private let crypto: CryptoServicing

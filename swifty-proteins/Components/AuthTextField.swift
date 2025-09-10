@@ -1,5 +1,6 @@
 import SwiftUI
 
+// modele de champ de texte pour login/mot de passe (pour vue login et signup)
 struct AuthTextField<FieldType: Hashable>: View {
     var placeholder: String
     @Binding var text: String
