@@ -58,18 +58,3 @@ struct HomeView: View {
         #endif
     }
 }
-
-struct LigandDetailView: View {
-    let ligand: String
-    var body: some View {
-        VStack(spacing: 16) {
-            Text(ligand).font(.largeTitle)
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("BackgroundColor").ignoresSafeArea())
-        .navigationTitle(ligand)
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
