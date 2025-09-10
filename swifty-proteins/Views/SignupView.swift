@@ -4,14 +4,19 @@ import SwiftUI
 final class SignupViewModel: ObservableObject {
 	@Published var username = ""
 	@Published var password = ""
+	@Published var confirmPassword = ""
 	@Published var isSecure = true
+	@Published var isSecureConfirm = true
 	@Published var enableFaceID = false
-	var canSubmit: Bool { !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !password.isEmpty }
+	var canSubmit: Bool { !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !password.isEmpty && !confirmPassword.isEmpty }
 	func toggleSecure() { isSecure.toggle() }
+	func toggleSecureConfirm() { isSecureConfirm.toggle() }
 	func clearFields() {
 		username = ""
 		password = ""
+		confirmPassword = ""
 		isSecure = true
+		isSecureConfirm = true
 		enableFaceID = false
 	}
 }
@@ -20,8 +25,8 @@ struct SignupView: View {
 	@EnvironmentObject var auth: AuthStore
 	@StateObject private var vm = SignupViewModel()
 	@FocusState private var focusedField: Field?
-	@State private var showKeyboardToolbar = false
-	enum Field { case username, password }
+	@StateObject private var feedback = FeedbackCenter()
+	enum Field { case username, password, confirm }
 
 	var body: some View {
 		NavigationStack {
@@ -53,6 +58,17 @@ struct SignupView: View {
 								onToggleSecure: { vm.toggleSecure() },
 								focusedField: $focusedField,
 								field: .password,
+								submitLabel: .next,
+								onSubmit: { focusedField = .confirm }
+							)
+							AuthTextField<SignupView.Field>(
+								placeholder: "Confirmer le mot de passe",
+								text: $vm.confirmPassword,
+								isSecure: vm.isSecureConfirm,
+								isPassword: true,
+								onToggleSecure: { vm.toggleSecureConfirm() },
+								focusedField: $focusedField,
+								field: .confirm,
 								submitLabel: .done,
 								onSubmit: submit
 							)
@@ -89,10 +105,17 @@ struct SignupView: View {
 				}
 			}
 		}
+		.feedbackOverlay(feedback)
 	}
 
 	private func submit() {
 		guard vm.canSubmit else { return }
+		let errors = PasswordPolicy.signupErrors(password: vm.password, confirm: vm.confirmPassword)
+		if !errors.isEmpty {
+			let message = "Mot de passe invalide :\n• " + errors.joined(separator: "\n• ")
+			feedback.show(message, style: .error)
+			return
+		}
 		dismissKeyboard()
 		auth.signup(username: vm.username.trimmingCharacters(in: .whitespacesAndNewlines), password: vm.password, enableBiometrics: vm.enableFaceID)
 		vm.clearFields()

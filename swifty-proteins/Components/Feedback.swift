@@ -43,7 +43,7 @@ struct FeedbackBanner: View {
 		.foregroundStyle(Color("OnBackgroundColor"))
 		.shadow(color: Color("OnSectionColor").opacity(0.25), radius: 20, x: 0, y: 10)
 		.padding(.horizontal, 16)
-		.padding(.top, 64)
+		.padding(.top, 82)
 	}
 	private var icon: String {
 		switch item.style { case .success: "checkmark.circle.fill"; case .error: "xmark.octagon.fill" }
