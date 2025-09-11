@@ -44,8 +44,11 @@ final class SDFRepository: SDFRepositing {
         do {
             return try await fetchFromRemote(id: id)
         } catch let netErr {
+			print("Fetch remote error: \(netErr.localizedDescription)")
+			print("Falling back to bundle.")
             if let fromBundle = try? fetchFromBundle(id: id) { return fromBundle }
             if let e = netErr as? SDFError { throw e }
+			print("Also failed to load from bundle.")
             throw SDFError.network(netErr.localizedDescription)
         }
     }

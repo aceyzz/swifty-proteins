@@ -11,40 +11,52 @@ struct FeedbackItem: Identifiable, Equatable {
 // appel et gestion des notifs feedback (banniere en haut de l'ecran)
 @MainActor
 final class FeedbackCenter: ObservableObject {
-	@Published var item: FeedbackItem?
+	@Published var items: [FeedbackItem] = []
+
 	func show(_ text: String, style: FeedbackStyle, duration: TimeInterval = 2.2) {
 		let newItem = FeedbackItem(text: text, style: style)
-		item = newItem
+		items.insert(newItem, at: 0)
 		Task {
 			try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
-			if item == newItem { withAnimation(.snappy) { item = nil } }
+			await MainActor.run {
+				withAnimation(.snappy) {
+					items.removeAll { $0.id == newItem.id }
+				}
+			}
 		}
 	}
-	func dismiss() { withAnimation(.snappy) { item = nil } }
+
+	func dismiss() {
+		guard let first = items.first else { return }
+		withAnimation(.snappy) { items.removeAll { $0.id == first.id } }
+	}
+
+	func dismiss(id: UUID) {
+		withAnimation(.snappy) { items.removeAll { $0.id == id } }
+	}
 }
 
 // vue et style de la banner de notif feedback
 struct FeedbackBanner: View {
 	var item: FeedbackItem
 	var body: some View {
-		HStack(spacing: 10) {
+		HStack(spacing: 8) {
 			Image(systemName: icon)
-				.imageScale(.large)
+				.imageScale(.medium)
 			Text(item.text)
-				.font(.subheadline.weight(.semibold))
-				.lineLimit(2)
+				.font(.caption.weight(.semibold))
+				.lineLimit(3)
 				.multilineTextAlignment(.leading)
 		}
-		.padding(.horizontal, 16)
-		.padding(.vertical, 12)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(background, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-		.overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color("OnSectionColor").opacity(0.15)))
+		.padding(.horizontal, 12)
+		.padding(.vertical, 8)
+		.frame(maxWidth: 320, alignment: .leading)
+		.background(background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+		.overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color("OnSectionColor").opacity(0.15)))
 		.foregroundStyle(Color("OnBackgroundColor"))
-		.shadow(color: Color("OnSectionColor").opacity(0.25), radius: 20, x: 0, y: 10)
-		.padding(.horizontal, 16)
-		.padding(.top, 82)
+		.shadow(color: Color("OnSectionColor").opacity(0.2), radius: 10, x: 0, y: 6)
 	}
+
 	private var icon: String {
 		switch item.style { case .success: "checkmark.circle.fill"; case .error: "xmark.octagon.fill" }
 	}
@@ -60,17 +72,26 @@ struct FeedbackBanner: View {
 struct FeedbackPresenter: ViewModifier {
 	@ObservedObject var center: FeedbackCenter
 	func body(content: Content) -> some View {
-		ZStack(alignment: .top) {
-			content
-			if let item = center.item {
-				FeedbackBanner(item: item)
-					.transition(.move(edge: .top).combined(with: .opacity))
-					.onTapGesture { center.dismiss() }
-					.zIndex(1)
-					.ignoresSafeArea(edges: .top)
+		GeometryReader { proxy in
+			ZStack(alignment: .bottomTrailing) {
+				content
+				VStack(alignment: .trailing, spacing: 8) {
+					ForEach(center.items) { item in
+						FeedbackBanner(item: item)
+							.onTapGesture { center.dismiss(id: item.id) }
+							.transition(.asymmetric(
+								insertion: .move(edge: .trailing).combined(with: .opacity),
+								removal: .move(edge: .trailing).combined(with: .opacity)
+							))
+					}
+				}
+				.padding(.trailing, 12)
+				.padding(.bottom, proxy.safeAreaInsets.bottom)
+				.zIndex(1)
 			}
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
 		}
-		.animation(.snappy, value: center.item)
+		.animation(.snappy, value: center.items)
 	}
 }
 
