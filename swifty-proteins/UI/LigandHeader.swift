@@ -4,6 +4,7 @@ struct ChipScroll<Data: RandomAccessCollection, Content: View>: View {
 	let items: Data
 	let maxHeight: CGFloat
 	@ViewBuilder var content: (Data.Element) -> Content
+	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
 	var body: some View {
 		ScrollView(.horizontal, showsIndicators: false) {
@@ -14,7 +15,6 @@ struct ChipScroll<Data: RandomAccessCollection, Content: View>: View {
 			}
 		}
 		.frame(maxHeight: maxHeight)
-		.padding(.vertical, -8)
 	}
 }
 

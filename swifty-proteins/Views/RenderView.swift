@@ -35,50 +35,56 @@ struct LigandDetailView: View {
     @StateObject private var web = WebSheetController()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            if vm.isLoading {
-                ProgressView("Téléchargement SDF…")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                if vm.isLoading {
+                    ProgressView("Téléchargement SDF…")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                } else if let errorText = vm.errorText {
+                    VStack(spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text(errorText).font(.footnote.weight(.semibold))
+                    }
+                    .foregroundStyle(.red)
                     .frame(maxWidth: .infinity, alignment: .center)
-            } else if let errorText = vm.errorText {
-                VStack(spacing: 10) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                    Text(errorText).font(.footnote.weight(.semibold))
-                }
-                .foregroundStyle(.red)
-                .frame(maxWidth: .infinity, alignment: .center)
-            } else {
-                ForEach(vm.molecules.indices, id: \.self) { idx in
-                    let mol = vm.molecules[idx]
+                } else {
+                    ForEach(vm.molecules.indices, id: \.self) { idx in
+                        let mol = vm.molecules[idx]
 
-                    LigandHeader(
-                        title: "Titre: \(mol.title)",
-                        program: mol.program,
-                        comment: mol.comment,
-                        atoms: mol.atoms,
-                        bonds: mol.bonds,
-                        docURL: vm.docURL,
-                        openDoc: { url in web.open(url) }
-                    )
+                        LigandHeader(
+                            title: "Titre: \(mol.title)",
+                            program: mol.program,
+                            comment: mol.comment,
+                            atoms: mol.atoms,
+                            bonds: mol.bonds,
+                            docURL: vm.docURL,
+                            openDoc: { url in web.open(url) }
+                        )
 
-                    if !mol.properties.isEmpty {
-                        Text("Propriétés (\(mol.properties.count))").font(.subheadline.weight(.semibold))
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 6) {
-                                ForEach(mol.properties.sorted(by: { $0.key < $1.key }), id: \.key) { k, v in
-                                    Text("\(k): \(v)").font(.caption).foregroundStyle(.secondary)
+                        Ligand3DView(molecule: mol) { text, style in
+                            feedback.show(text, style: style)
+                        }
+
+                        if !mol.properties.isEmpty {
+                            Text("Propriétés (\(mol.properties.count))").font(.subheadline.weight(.semibold))
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    ForEach(mol.properties.sorted(by: { $0.key < $1.key }), id: \.key) { k, v in
+                                        Text("\(k): \(v)").font(.caption).foregroundStyle(.secondary)
+                                    }
                                 }
                             }
+                            .frame(maxHeight: 140)
                         }
-                        .frame(maxHeight: 140)
-                    }
 
-                    Divider().padding(.top, 6)
+                        Divider().padding(.top, 6)
+                    }
+                    Spacer()
                 }
-                Spacer()
             }
+            .padding()
+            .frame(maxWidth: .infinity)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("BackgroundColor").ignoresSafeArea())
         .navigationTitle(ligand)
         .navigationBarTitleDisplayMode(.inline)
