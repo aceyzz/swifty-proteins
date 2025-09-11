@@ -189,12 +189,17 @@ struct FullscreenLigand3D: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selected: Int?
     @State private var req = false
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.9).ignoresSafeArea()
-            Ligand3DSceneView(molecule: molecule, selectedAtomIndex: $selected, requestShare: $req, style: style) { _ in }
-                .padding()
-            .ignoresSafeArea(.container, edges: .bottom)
+            Ligand3DSceneView(
+                molecule: molecule,
+                selectedAtomIndex: $selected,
+                requestShare: $req,
+                style: style
+            ) { _ in }
+            .padding()
             VStack {
                 HStack {
                     Spacer()
@@ -204,16 +209,20 @@ struct FullscreenLigand3D: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24, weight: .bold))
                             .padding(12)
+							.tint(.white)
                     }
                     .padding(.trailing, 12)
                     .padding(.top, 12)
-                    .padding(.top, (UIApplication.shared.connectedScenes
-                        .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-                        .first?.safeAreaInsets.top ?? 0))
-                    Spacer()
                 }
+                Spacer()
             }
-            .ignoresSafeArea(.container, edges: .top)
+            .ignoresSafeArea(edges: .bottom)
+            .padding(.top, (
+                UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .flatMap { $0.windows }
+                    .first { $0.isKeyWindow }?.safeAreaInsets.top ?? 0
+            ))
         }
     }
 }
