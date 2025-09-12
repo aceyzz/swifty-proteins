@@ -176,7 +176,7 @@ Nous listons ici les composants clés et le rôle de chaque fichier important du
 ### Export/Partage
 
 <div align="center">
-	<img src="./utils/screenshots/export1.PNG" alt="Shared screen" width="360" style="border-radius:16px">
+	<img src="./utils/screenshots/export1.png" alt="Shared screen" width="360" style="border-radius:16px">
 </div>
 
 <br>
