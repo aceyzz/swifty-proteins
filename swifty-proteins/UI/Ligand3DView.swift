@@ -11,13 +11,13 @@ struct Ligand3DView: View {
     @State private var shareURL: URL?
     @State private var presentShare = false
     @State private var showFullscreen = false
-    @State private var style: GeometryStyle = .sphere
+    @State private var style: GeometryStyle = .ballAndStick
 
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
                 Menu {
-                    Picker("Forme", selection: $style) {
+                    Picker("Modèle", selection: $style) {
                         ForEach(GeometryStyle.allCases) { s in
                             Text(s.title).tag(s)
                         }
@@ -103,40 +103,6 @@ struct Ligand3DView: View {
     }
 }
 
-private struct AtomInfoBar: View {
-    let atom: LigandData.Atom
-    var onClose: () -> Void
-    var body: some View {
-        HStack(spacing: 10) {
-            let info = PeriodicTable.shared.info(for: atom.symbol)
-            Text("\(atom.symbol)\(info?.name != nil ? " · \(info!.name!)" : "")")
-                .font(.headline)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-            HStack(spacing: 8) {
-                Text("x: \(atom.x, specifier: "%.3f")")
-                Text("y: \(atom.y, specifier: "%.3f")")
-                Text("z: \(atom.z, specifier: "%.3f")")
-            }
-            .font(.caption)
-            if atom.charge != 0 {
-                Text("Charge: \(atom.charge)")
-                    .font(.caption)
-            }
-            Spacer(minLength: 0)
-            Button(role: .cancel) { onClose() } label: {
-                Image(systemName: "xmark")
-                    .imageScale(.small)
-                    .padding(6)
-                    .background(.ultraThinMaterial, in: Circle())
-            }
-        }
-        .padding(10)
-        .background(Color("SectionColor"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-}
-
 enum ImageShareWriter {
     static func writePNG(_ image: UIImage) -> URL? {
         guard let data = image.pngData() else { return nil }
@@ -209,7 +175,7 @@ struct FullscreenLigand3D: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24, weight: .bold))
                             .padding(12)
-							.tint(.white)
+                            .tint(.white)
                     }
                     .padding(.trailing, 12)
                     .padding(.top, 12)
@@ -233,7 +199,7 @@ struct Ligand3DSceneView: UIViewRepresentable {
     let molecule: LigandData.Molecule
     @Binding var selectedAtomIndex: Int?
     @Binding var requestShare: Bool
-    var style: GeometryStyle = .sphere
+    var style: GeometryStyle = .ballAndStick
     let onShareReady: (URL?) -> Void
 
     func makeUIView(context: Context) -> SCNView {
@@ -295,7 +261,7 @@ struct Ligand3DSceneView: UIViewRepresentable {
             return m
         }()
         var updateSelectionBinding: ((Int?) -> Void)?
-        var currentStyle: GeometryStyle = .sphere
+        var currentStyle: GeometryStyle = .ballAndStick
 
         init(molecule: LigandData.Molecule) {
             self.molecule = molecule
@@ -314,12 +280,11 @@ struct Ligand3DSceneView: UIViewRepresentable {
         }
 
         func rebuild(style: GeometryStyle) {
-            guard let view = scnView else { return }
+            guard scnView != nil else { return }
             currentStyle = style
             root.childNodes.forEach { $0.removeFromParentNode() }
             buildGeometry(for: molecule, style: style)
             fitCamera(resetController: false)
-            view.setNeedsDisplay()
         }
 
         func makeCameraNode() -> SCNNode {
@@ -360,37 +325,18 @@ struct Ligand3DSceneView: UIViewRepresentable {
         }
 
         private func buildGeometry(for mol: LigandData.Molecule, style: GeometryStyle) {
-            var atomNodes: [SCNNode] = []
-            atomNodes.reserveCapacity(mol.atoms.count)
-
             let cfg = GeometryConfig(
                 atomBaseRadius: atomRadius,
                 bondBaseRadius: bondRadius,
                 style: style,
                 materialForSymbol: { [weak self] sym in self?.material(for: sym) ?? SCNMaterial() },
                 scaleForSymbol: { sym in PeriodicTable.shared.scale(for: sym) ?? 1.0 },
+                vdwRadiusForSymbol: { sym in PeriodicTable.shared.vdwRadius(for: sym) ?? (1.7 as CGFloat) },
                 bondMaterial: bondMaterial
             )
-
-            for (i, a) in mol.atoms.enumerated() {
-                let node = GeometryFactory.makeAtomNode(atom: a, index: i, cfg: cfg)
-                root.addChildNode(node)
-                atomNodes.append(node)
-            }
-
-            for b in mol.bonds {
-                let i1 = max(0, min(mol.atoms.count - 1, b.a1 - 1))
-                let i2 = max(0, min(mol.atoms.count - 1, b.a2 - 1))
-                guard i1 != i2 else { continue }
-                let n1 = atomNodes[i1].position
-                let n2 = atomNodes[i2].position
-                let aScale = PeriodicTable.shared.scale(for: mol.atoms[i1].symbol) ?? 1.0
-                let bScale = PeriodicTable.shared.scale(for: mol.atoms[i2].symbol) ?? 1.0
-                let aR = atomRadius * aScale
-                let bR = atomRadius * bScale
-                let nodes = GeometryFactory.makeBondNodes(order: b.order, from: n1, to: n2, aRadius: aR, bRadius: bR, cfg: cfg)
-                nodes.forEach { root.addChildNode($0) }
-            }
+            let builder = GeometryFactory.builder(for: style)
+            let nodes = builder.buildNodes(for: mol, cfg: cfg)
+            nodes.forEach { root.addChildNode($0) }
         }
 
         private func material(for symbol: String) -> SCNMaterial {
