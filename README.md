@@ -2,7 +2,7 @@
 
 # Swifty Proteins
 
-Application iOS d'exploration de ligands en 3D (SceneKit) avec authentification locale et fonctionnalités mobiles courantes.
+Application iOS d'exploration de ligands en 3D (SceneKit) avec authentification locale et fonctionnalités mobiles courantes.  
 
 <br>
 
@@ -10,6 +10,7 @@ Application iOS d'exploration de ligands en 3D (SceneKit) avec authentification 
 - [Objectifs du projet](#objectifs-du-projet)
 - [Installation & environnement](#installation--environnement)
 - [Fonctionnalités principales](#fonctionnalités-principales)
+- [Bonus implémentés](#bonus-implémentés)
 - [Détails d'implémentation (fichiers et composants)](#détails-dimplémentation-fichiers-et-composants)
 - [Captures d'écrans](#captures-décrans)
 
@@ -44,6 +45,22 @@ Le projet vise à :
 - Vue 3D balls-and-sticks (`SceneKit`) avec [Coloration CPK](https://fr.wikipedia.org/wiki/Code_de_couleurs_CPK).
 - Tooltip d'atome au tap, partage d'image PNG du rendu 3D.
 - Protection de confidentialité : masquage en background et auto-logout.
+
+<br>
+
+## Bonus implémentés
+
+- 3 modèles d'affichage :
+	- Balls-and-sticks  
+	- Wireframe (seulement les liaisons entre atomes)  
+	- Space-filling  
+- Light/Dark mode adaptatif  
+- Watermark de l'application lors de partage  
+- Ajout de lien vers documentation du ligand selectionné en Websheet vers RCSB  
+- Propriétés en détail de chaque atome au clic  
+- Ajout de lien vers documentation de chaque atome selectionné en Websheet vers Wikipedia  
+- Compatibilité iPhone, iPad, MacOS et Apple Vision  
+- Fichiers `.sdf` embarqués pour mode Offline (et fallback si site RCSB indisponible)  
 
 <br>
 
@@ -178,6 +195,13 @@ Nous listons ici les composants clés et le rôle de chaque fichier important du
 <div align="center">
 	<img src="./utils/screenshots/export1.png" alt="Shared screen" width="360" style="border-radius:16px">
 </div>
+
+<br>
+<br>
+
+## Grade
+
+> En cours d'évaluation, note potentielle : grade max
 
 <br>
 

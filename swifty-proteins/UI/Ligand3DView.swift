@@ -234,7 +234,7 @@ struct Ligand3DSceneView: UIViewRepresentable {
                     onShareReady(nil)
                     return
                 }
-                let marked = ImageShareWriter.watermark(img, text: "cedmulle - 42swifty-companion")
+                let marked = ImageShareWriter.watermark(img, text: "cedmulle x cduffaut - 42swifty-companion")
                 let url = ImageShareWriter.writePNG(marked)
                 onShareReady(url)
             }
