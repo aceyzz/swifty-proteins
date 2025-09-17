@@ -83,7 +83,7 @@ final class AuthStore: ObservableObject {
         case AuthError.userNotFound: return "Utilisateur introuvable"
         case AuthError.invalidCredentials: return "Identifiants invalides"
         case AuthError.biometricsUnavailable: return "Biométrie indisponible"
-        case let e as KeychainError: return "Erreur Keychain \(e)"
+        case let e as KeychainError: return "Erreur Keychain \(e.localizedDescription)"
         default: return "Erreur inconnue"
         }
     }
