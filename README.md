@@ -201,7 +201,7 @@ Nous listons ici les composants clés et le rôle de chaque fichier important du
 
 ## Grade
 
-> En cours d'évaluation, note potentielle : grade max
+<img src="./utils/115.png" alt="Grade" width="150">
 
 <br>
 

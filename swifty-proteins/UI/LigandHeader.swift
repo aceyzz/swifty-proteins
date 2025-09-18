@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ChipScroll<Data: RandomAccessCollection, Content: View>: View {
 	let items: Data
-	let maxHeight: CGFloat
 	@ViewBuilder var content: (Data.Element) -> Content
 	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
@@ -14,7 +13,6 @@ struct ChipScroll<Data: RandomAccessCollection, Content: View>: View {
 				}
 			}
 		}
-		.frame(maxHeight: maxHeight)
 	}
 }
 
@@ -41,6 +39,10 @@ struct BondChip: View {
 		VStack(alignment: .leading, spacing: 1) {
 			Text("\(index + 1). Atomes: \(bond.a1)-\(bond.a2)")
 			Text("Ordre: \(bond.order)")
+			if let s = bond.stereo { Text("Stéréo: \(s)") }
+			if let t = bond.topology { Text("Topologie: \(t)") }
+			if let r = bond.reactingCenter { Text("Centre réactif: \(r)") }
+			if bond.isAromatic { Text("Aromatique") }
 		}
 		.font(.caption2)
 		.padding(6)
@@ -81,13 +83,13 @@ struct LigandHeader: View {
 			Text("Atomes: \(atoms.count)  |  Liaisons: \(bonds.count)").font(.caption)
 
 			if !atoms.isEmpty {
-				ChipScroll(items: Array(atoms.enumerated()), maxHeight: 64) { pair in
+				ChipScroll(items: Array(atoms.enumerated())) { pair in
 					AtomChip(index: pair.offset, atom: pair.element)
 				}
 			}
 
 			if !bonds.isEmpty {
-				ChipScroll(items: Array(bonds.enumerated()), maxHeight: 48) { pair in
+				ChipScroll(items: Array(bonds.enumerated())) { pair in
 					BondChip(index: pair.offset, bond: pair.element)
 				}
 			}

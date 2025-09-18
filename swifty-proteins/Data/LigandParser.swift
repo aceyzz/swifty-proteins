@@ -12,6 +12,10 @@ struct LigandData: Hashable {
         let a1: Int
         let a2: Int
         let order: Int
+        let stereo: Int?
+        let topology: Int?
+        let reactingCenter: Int?
+        var isAromatic: Bool { order == 4 }
     }
     struct Molecule: Hashable {
         let title: String
@@ -127,8 +131,23 @@ enum SDFParser {
 
     private static func parseBondLine(_ s: String) -> LigandData.Bond? {
         let p = s.split { $0 == " " || $0 == "\t" }.map(String.init)
-        guard p.count >= 3, let a1 = Int(p[0]), let a2 = Int(p[1]), let order = Int(p[2]) else { return nil }
-        return LigandData.Bond(a1: a1, a2: a2, order: order)
+        guard p.count >= 3,
+            let a1 = Int(p[0]),
+            let a2 = Int(p[1]),
+            let rawOrder = Int(p[2]) else { return nil }
+
+        let stereo = p.count >= 4 ? Int(p[3]) : nil
+        let topology = p.count >= 5 ? Int(p[4]) : nil
+        let reacting = p.count >= 6 ? Int(p[5]) : nil
+
+        return LigandData.Bond(
+            a1: a1,
+            a2: a2,
+            order: rawOrder,
+            stereo: stereo,
+            topology: topology,
+            reactingCenter: reacting
+        )
     }
 
     private static func extractPropertyName(_ line: String) -> String? {
